@@ -1,9 +1,9 @@
 burst-pool
 ==========
 
-V2 Pool for Burstcoin
+Lex Pool for Burstcoin
 
 please donate for development to
 
-[Burst] BURST-8E8K-WQ2F-ZDZ5-FQWHX
-[Bitcoin] 1UrayjqRjSJjuouhJnkczy5AuMqJGRK4b
+[Burst] BURST-GAJL-VWKN-2XPB-H39R9
+[Bitcoin] 1EWqGpP96Jx2gnD4UQBEoMrdpJPmLpdKJH
