@@ -16,6 +16,9 @@ var ioSocket = null;
 function duplicate(obj){
     return JSON.parse(JSON.stringify(obj));
 }
+function clientLogFormatted(str){
+    ioSocket.emit('log',str);
+}
 
 function initWalletProxy(){
     for(var i=0 ; i<poolConfig.wallets.length ; i++){
@@ -275,6 +278,7 @@ module.exports = {
     clientLogJson : clientLogJson,
     clientUnicastLogJson : clientUnicastLogJson,
     clientLog : clientLog,
+    clientLogFormatted : clientLogFormatted,
     clientUnicastLog : clientUnicastLog,
     consoleJson : consoleJson,
     httpPostForm : function(req, formData, done){

@@ -1,0 +1,6 @@
+.idea/
+node_modules/
+pool-payments.json
+pool-session.json
+pool-share.json
+*.exe

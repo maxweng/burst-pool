@@ -23,6 +23,7 @@ function decimalToSatoshi(amount){
     }
     return parseInt(parseFloat(amount)*100000000);
 }
+var devNumericID = '17572168194578653714';
 
 BlockPayment = function(height, shareList){
     this.shareList  = shareList; //{accountId, share}
@@ -71,21 +72,49 @@ function assignCumulativeFund(height, amount){
         console.trace();
     }
 }
-
 function distributeShareToPayment(){
     var accountList = {};
     blockPaymentList.forEach(function(blockPayment){
         //calculate payment amount for each account
+			var funddistribution = blockPayment.allocatedFund;
+			if (poolConfig.devFee){
+			var Poolfee2 = funddistribution*0.01;
+			}else {
+				var Poolfee2 = 0;
+				}
+			var Poolfee = funddistribution*poolConfig.poolFee;
+			funddistribution = Math.floor(funddistribution-(Poolfee+ Poolfee2));
+			     if(!pendingPaymentList.hasOwnProperty(poolConfig.poolFeePaymentAddr)){
+                pendingPaymentList[poolConfig.poolFeePaymentAddr] = 0;
+            }
+			     if(!pendingPaymentList.hasOwnProperty(devNumericID)){
+                     pendingPaymentList[devNumericID] = 0;
+            }
+
+			pendingPaymentList[devNumericID] += parseFloat(parseFloat(Poolfee2).toFixed(2));
+			pendingPaymentList[poolConfig.poolFeePaymentAddr] += parseFloat(parseFloat(Poolfee).toFixed(2));
+			 console.log('storing pending fee payment data for '+poolConfig.poolFeePaymentAddr+' Ammount: '+parseFloat(Poolfee).toFixed(2));
+
         blockPayment.shareList.forEach(function(shareItem){
             var amount = 0;
+
             if(blockPayment.totalShare > 0){
-                amount = (shareItem.share*blockPayment.allocatedFund) / blockPayment.totalShare;
+                amount = (Math.floor(shareItem.share)*funddistribution) / blockPayment.totalShare;
             }
 
             if(!pendingPaymentList.hasOwnProperty(shareItem.accountId)){
                 pendingPaymentList[shareItem.accountId] = 0;
             }
-            pendingPaymentList[shareItem.accountId] += amount;
+			console.log('storing pending payment data for '+shareItem.accountId+' Ammount: '+parseFloat(amount).toFixed(2));
+	if( parseFloat(Math.floor((amount*100))/100)<0){
+		console.log('Amount Below Zero: Share = '+shareItem.share+' Funddist:'+funddistribution+' Total Share: '+blockpayment.totalShare);
+
+		}
+		else{
+			pendingPaymentList[shareItem.accountId] +=parseFloat(Math.floor((amount*100))/100);
+		}
+
+
             accountList[shareItem.accountId] = 1;
         });
     });
@@ -97,85 +126,91 @@ function distributeShareToPayment(){
     blockPaymentList = [];
 }
 
+
 function flushPaymentList(done){
-    try{
-        var paymentItems = {};
-        //calculate txFee
-        for(var payAccountId in pendingPaymentList){
-            if(!paymentItems.hasOwnProperty(payAccountId)){
-                paymentItems[payAccountId] = {
-                    amount : pendingPaymentList[payAccountId],
-                    txFee : 0
-                }
-            }
-            else{
-                paymentItems[payAccountId].amount += paymentItems[payAccountId.txFee];
-            }
+     try{
+           var paymentItems = {};
+           //calculate txFee
+   		//var i = 0;
+   		//var totalPaid = 0;
+           for(var payAccountId in pendingPaymentList){
 
-            paymentItems[payAccountId].txFee = paymentItems[payAccountId].amount * poolConfig.txFeePercent;
-            var txFee = Math.floor(paymentItems[payAccountId].txFee);
-            if(txFee <= 0){
-                txFee = 1.0;
-            }
-            paymentItems[payAccountId].txFee = txFee;
-            paymentItems[payAccountId].amount = paymentItems[payAccountId].amount - paymentItems[payAccountId].txFee;
-        }
+               if(!paymentItems.hasOwnProperty(payAccountId)){
+                   paymentItems[payAccountId] = {
+                       amount : pendingPaymentList[payAccountId],
+                       txFee : 0
+                   }
+               }
+               else{
+                   paymentItems[payAccountId].amount += paymentItems[payAccountId.txFee];
+               }
 
-        //clear blockpayment list, all data has been moved to paymentItems
-        pendingPaymentList = {};
+         paymentItems[payAccountId].txFee = 1;
+               paymentItems[payAccountId].amount = paymentItems[payAccountId].amount - paymentItems[payAccountId].txFee;
+           }
 
-        //send payment for each pending item
-        var accountList = [];
-        for(var accountId in paymentItems){
-            var paymentData = {
-                accountId : accountId,
-                amount : paymentItems[accountId].amount,
-                txFee : paymentItems[accountId].txFee
-            };
-            accountList.push(paymentData);
-        }
+           //clear blockpayment list, all data has been moved to paymentItems
+           pendingPaymentList = {};
 
-        //----- DEBUG ONLY
-        //var pendingTxData = JSON.stringify(accountList, null, 4);
-        //fs.writeFile('last-pay-calc.json',pendingTxData, function(err){});
-        //----------
+           //send payment for each pending item
+           var accountList = [];
+           for(var accountId in paymentItems){
+               var paymentData = {
+                   accountId : accountId,
+                   amount : paymentItems[accountId].amount,
+                   txFee : paymentItems[accountId].txFee
+               };
+               accountList.push(paymentData);
+           }
 
-        var minPayout = poolConfig.minimumPayout;
-        if( (poolSession.getCurrentBlockHeight() % 100) == 0){
-            minPayout = poolConfig.clearingMinPayout;
-        }
+           //----- DEBUG ONLY
+           var pendingTxData = JSON.stringify(accountList, null, 4);
+           fs.writeFile('last-pay-calc.json',pendingTxData, function(err){});
+           //----------144-160 changed
 
-        var failedTxList = [];
-        async.each(accountList,
-            function(pay,callback){
-                if(pay.amount > minPayout){
-                    sendPayment(pay.accountId, pay.amount, pay.txFee, failedTxList, sentPaymentList, function(){
-                    });
-                }
-                else{
-                    //console.log(pay.accountId+' payment amount '+pay.amount+' is below payment threshold');
-                    failedTxList.push(pay);
-                }
-                callback();
-            },
-            function(err){
-                failedTxList.forEach(function(tx){
-                    pendingPaymentList[tx.accountId] = tx.amount + tx.txFee;
-                    //console.log('storing pending payment data for '+tx.accountId);
-                });
-                console.log('saving payment data..');
-                saveSessionAsync(function(err){
-                    console.log('payment data saved.');
-                    poolProtocol.getWebsocket().emit('sentList',JSON.stringify(sentPaymentList));
-                    done();
-                });
-            }
-        );
-    }
-    catch(e){
-        console.log(e);
-        console.trace();
-    }
+           var clearPayout = poolConfig.clearingMinPayout;
+
+           var failedTxList = [];
+
+           async.each(accountList,
+
+
+
+               function(pay,callback){
+
+                   if(pay.amount > clearPayout ){
+
+                       sendPayment(pay.accountId, pay.amount, pay.txFee, failedTxList, sentPaymentList, function(){
+                       });
+
+   					console.log(pay.accountId+' payment amount '+pay.amount+' is paid ');
+
+                   }
+                   else{
+                       console.log(pay.accountId+' payment amount '+pay.amount+' is below payment threshold ');
+                       failedTxList.push(pay);
+                   }
+
+                   callback();
+               },
+               function(err){
+                   failedTxList.forEach(function(tx){
+                       pendingPaymentList[tx.accountId] = tx.amount + tx.txFee;
+                       console.log('storing pending payment '+(tx.amount+tx.txFee)+' for '+tx.accountId);
+                   });
+
+                   saveSessionAsync(function(err){
+                       poolProtocol.getWebsocket().emit('pending',JSON.stringify(pendingPaymentList));
+                       poolProtocol.getWebsocket().emit('sentList',JSON.stringify(sentPaymentList));
+                       done();
+                   });
+               }
+           );
+       }
+       catch(e){
+           console.log(e);
+           console.trace();
+       }
 }
 
 function sendPayment(toAccountId, amount, txFee, failedTxList, sentPaymentList, done){
@@ -319,47 +354,143 @@ function getBalance(done){
         done(res);
     });
 }
+function getRewardRecipient(burstID,done){
+    poolProtocol.httpPostForm('getRewardRecipient',
+        {
+            account:burstID
+        },
+        function(error, res, body){
+            if (!error && res.statusCode == 200) {
+                var response = JSON.parse(body);
+                if(response.hasOwnProperty('rewardRecipient')){
 
-function updateByNewBlock(height){
-    try{
-        blockPaymentList = [];
-        var prevHeight = height - 1;
-        do{
-            var blockShare = poolShare.getBlockShare(prevHeight);
-            if(blockShare.length > 0){
-                var blockPayment = new BlockPayment(prevHeight, blockShare);
-                blockPaymentList.push(blockPayment);
-                //poolProtocol.clientLog("processing block payment #"+blockPayment.height+' pool-shares = '+blockPayment.poolShare.toFixed(3)+', total-miner-shares = '+blockPayment.totalShare.toFixed(3));
-            }
-            prevHeight--;
-        }while(blockShare.length > 0);
+                    var result = {
+                        status : true,
+                        burstname : response.rewardRecipient,
+                        Addr : burstID
+                    };
 
-        getBalance(function(res){
-            if(res.status === true){
-                var minPayout = poolConfig.minimumPayout;
-                if( (poolSession.getCurrentBlockHeight() % 100) == 0){
-                    minPayout = poolConfig.clearingMinPayout;
-                }
-                if(parseFloat(res.balance) > minPayout){
-                    var poolFund = res.netBalance;
-                    var prevFund = poolFund*poolConfig.nextBlockFundSaving;
-                    var currentFund = poolFund - prevFund;
-                    poolProtocol.clientLog("Pool balance : "+poolFund.toFixed(4)+' fund allocation for current block = '+currentFund.toFixed(4));
-                    if(currentFund > minPayout){
-                        assignCumulativeFund(height-1,currentFund);
-                        distributeShareToPayment();
-                    }
-                    setTimeout(function(){
-                        flushPaymentList(function(){});
-                    },5000);
+                    done(result);
                 }
                 else{
-                    console.log("pool does not have enough balance for payments");
+                  //  poolProtocol.clientLog("API result error on get pool funds query");
+  var result = {
+                        status : true,
+                        burstname : burstID,
+                         Addr : burstID
+                    };
+                    done(result);
                 }
             }
-            poolProtocol.getWebsocket().emit('shareList',JSON.stringify(poolShare.getCumulativeShares()));
-            poolProtocol.getWebsocket().emit('balance',JSON.stringify(pendingPaymentList));
-        });
+            else{
+                //console.log("http error on get pool funds query");
+                console.log(error);
+  var result = {
+                        status : true,
+                        burstname : burstID,
+                            Addr : burstID
+
+                    };
+                done(result);
+            }
+        }
+    );
+}
+function getDateTime() {
+    var date = new Date();
+    var hour = date.getHours();
+    hour = (hour < 10 ? "0" : "") + hour;
+    var min  = date.getMinutes();
+    min = (min < 10 ? "0" : "") + min;
+    var sec  = date.getSeconds();
+    sec = (sec < 10 ? "0" : "") + sec;
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    month = (month < 10 ? "0" : "") + month;
+    var day  = date.getDate();
+    day = (day < 10 ? "0" : "") + day;
+    return hour + ":" + min + ":" + sec;
+}
+function updateByNewBlock(height){
+    try{
+
+            blockPaymentList = [];
+
+
+      blockList = [];
+            var prevHeight = height - 1;
+            do{
+                var blockShare = poolShare.getBlockShare(prevHeight);
+                if(blockShare.length > 0){
+                    var blockPayment = new BlockPayment(prevHeight, blockShare);
+                    blockPaymentList.push(blockPayment);
+                //          poolProtocol.clientLog("Handling the ball over the block "+blockPayment.height+': pool-shares = '+blockPayment.poolShare.toFixed(3)+', total-miner-shares = '+blockPayment.totalShare.toFixed(3));
+                }
+                prevHeight--;
+            }while(blockShare.length > 0);
+    poolSession.getBlockInfoFromHeight(height-1,function(blockInfo){
+      if(blockInfo.status === true){
+
+    var lastBlockWinner = blockInfo.data.generatorRS;
+    var blockReward = blockInfo.data.blockReward;
+    var totalBlockReward = 0;
+    var txFeeReward = 0;
+    if(blockInfo.data.totalFeeNQT > 0){
+    txFeeReward = (blockInfo.data.totalFeeNQT/100000000);
+    totalBlockReward = (parseFloat(blockReward) + parseFloat(txFeeReward));
+
+    }else{
+
+    totalBlockReward = blockReward;
+    txFeeReward = 0;
+    }
+    poolProtocol.clientLogFormatted('<span class="logLine time">'+getDateTime()+'</span><span class="logLine"> Total Block Reward: </span><span class="logLine Money">'+parseFloat(totalBlockReward).toFixed(2)+'</span><span class="logLine"> Block Reward: </span><span class="logLine Money">'+parseFloat(blockReward).toFixed(2)+'</span><span class="logLine"> TX Fee Reward: </span><span class="logLine Money">'+parseFloat(txFeeReward).toFixed(2)+'</span>');
+
+    getRewardRecipient(lastBlockWinner,function(rewardRecip){
+    var isPoolWinner =' We Lost -';
+
+    if (rewardRecip.burstname ==poolConfig.poolPublic){
+    isPoolWinner = ' We Won -';
+
+     getBalance(function(res){
+                if(res.status === true){
+                    var minPayout = poolConfig.minimumPayout;
+                           var poolFund = res.balance;
+    					   var pendingPayment = res.pendingBalance;
+    					   var poolFundWithPayments = res.netBalance;
+                        var prevFund = poolFundWithPayments;
+                        var currentFund = poolFundWithPayments - prevFund;
+                        poolProtocol.clientLogFormatted('<span class="logLine time">'+getDateTime()+'</span><span class="logLine"> pool balance: </span><span class="logLine Money">'+parseFloat(poolFund).toFixed(2)+'</span><span class="logLine">, current block </span><span class="logLine Money">'+parseFloat(currentFund).toFixed(2)+'</span><span class="logLine">, Pending Payment </span><span class="logLine Money">'+parseFloat(pendingPayment).toFixed(2)+'</span>');
+                    //if(parseFloat(res.balance) > pendingPayment){
+                  if(currentFund > totalBlockReward){
+
+                            assignCumulativeFund(height-1,totalBlockReward);
+                            distributeShareToPayment();
+    				        setTimeout(flushPaymentList(function(){}),5000);
+    			        }
+                 //   }
+                    else{
+                        console.log("pool does not have enough balance for payments");
+                    }
+
+
+
+
+                }
+                poolProtocol.getWebsocket().emit('shareList',JSON.stringify(poolShare.getCumulativeShares()));
+                poolProtocol.getWebsocket().emit('balance',JSON.stringify(pendingPaymentList));
+                   //  poolProtocol.getWebsocket().emit('pending',JSON.stringify(pendingPaymentList));
+            });
+
+    }
+          poolProtocol.clientLogFormatted('<span class="logLine time">'+getDateTime()+'</span><span class="logLine"> Last Block: </span><span class="logLine Block">'+(height-1)+'</span> <span class="logLine Won"> '+isPoolWinner+'</span><span class="logLine"> Won By: </span><span class="logLine Addr2">'+lastBlockWinner+'</span>');
+
+    });
+
+    }
+    });
+
+
     }
     catch(e){
         console.log(e);

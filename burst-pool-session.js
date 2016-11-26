@@ -185,7 +185,29 @@ function switchNextWallet(){
         }
     }
 }
-
+function getBlockInfoFromHeight(blockId, done){
+    request.post( {
+            url:config.wallets[sessionState.walletIndex].walletUrl+'/burst',
+            form: {
+                requestType:'getBlock',
+                height:blockId
+            }
+        },
+        function(error3, res3, body3){
+            var result = {
+                status : false,
+                data : {}
+            };
+            if (!error3 && res3.statusCode == 200) {
+                result.status = true;
+                result.data = JSON.parse(body3);
+                result.data.blockId = blockId;
+                result.data.unixTimestamp = sessionState.genesisBlockTimestamp + parseInt(result.data.timestamp)*1000;
+            }
+            done(result);
+        }
+    );
+}
 function getBlockInfo(blockId, done){
     request.post( {
             url:config.wallets[sessionState.walletIndex].walletUrl+'/burst',
@@ -273,6 +295,7 @@ module.exports = {
     },
     getBlockInfo : getBlockInfo,
     getLastBlockId : getLastBlockId,
+    getBlockInfoFromHeight : getBlockInfoFromHeight,
     isAccountIdAssignedToPool : isAccountIdAssignedToPool,
     switchNextWallet : switchNextWallet,
     getMiningInfo : getMiningInfo,
