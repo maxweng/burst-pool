@@ -458,11 +458,11 @@ function updateByNewBlock(height){
                            var poolFund = res.balance;
     					   var pendingPayment = res.pendingBalance;
     					   var poolFundWithPayments = res.netBalance;
-                        var prevFund = poolFundWithPayments;
-                        var currentFund = poolFundWithPayments - prevFund;
+                   //     var prevFund = poolFundWithPayments;
+                        var currentFund = poolFundWithPayments;
                         poolProtocol.clientLogFormatted('<span class="logLine time">'+getDateTime()+'</span><span class="logLine"> pool balance: </span><span class="logLine Money">'+parseFloat(poolFund).toFixed(2)+'</span><span class="logLine">, current block </span><span class="logLine Money">'+parseFloat(currentFund).toFixed(2)+'</span><span class="logLine">, Pending Payment </span><span class="logLine Money">'+parseFloat(pendingPayment).toFixed(2)+'</span>');
                     //if(parseFloat(res.balance) > pendingPayment){
-                  if(currentFund > totalBlockReward){
+                  if(currentFund >= totalBlockReward){
 
                             assignCumulativeFund(height-1,totalBlockReward);
                             distributeShareToPayment();
