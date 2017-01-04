@@ -10,6 +10,14 @@ please donate for development to
 [Burst] BURST-GAJL-VWKN-2XPB-H39R9
 [Bitcoin] 1EWqGpP96Jx2gnD4UQBEoMrdpJPmLpdKJH
 
+developed with node v4.7.1. works with versoin https://nodejs.org/download/release/v5.12.0/ and below
+
+node v6 has changed a lot of functions and causes it to crash shortly after if not when a block is hit. or even stops it from running alltogether
+
+forum thread
+
+https://forums.burst-team.us/topic/2643/lex-pool-a-rewritten-pool-based-on-uray-source
+
 config
 
 
