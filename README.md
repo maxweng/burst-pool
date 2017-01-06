@@ -5,7 +5,11 @@ Lex Pool for Burstcoin
 Official Pool URL: http://burst.lexitoshi.uk/#
 Recipient: BURST-F3XD-Y4M5-SN8C-G9FFJ
 
-please donate for development to
+please donate for development to or alternatly leave the devfee option on the pool on.
+
+for burst or pool related discussion go to http://discord.io/burstofficial 
+
+those who have enabled the devfee feature ill support as best as i can. this way you get some support for supporting the project
 
 [Burst] BURST-GAJL-VWKN-2XPB-H39R9
 [Bitcoin] 1EWqGpP96Jx2gnD4UQBEoMrdpJPmLpdKJH
