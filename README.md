@@ -14,6 +14,8 @@ the devfee also helps claw back the huge amount of burst i lost due to ghostbloc
 
 a few users disable the devfee and just send me a one off donation instead as a thank you for taking on this project and to help towards these costs.
 
+We have already had a few keyboard warriors take to the forums about the devfee option but the argument stands that the software is still free and the fee is OPTIONAL and can be enabled/disabled at users descrestion. these users have caused themselves to lose credibility in the community so please refrain from any negative comments on the forums and if you have a problem please just message me instead. (note: im very busy with other burst related projects so it might take me a while to respond)
+
 
 [Burst] BURST-GAJL-VWKN-2XPB-H39R9
 [Bitcoin] 1EWqGpP96Jx2gnD4UQBEoMrdpJPmLpdKJH
