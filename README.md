@@ -5,11 +5,15 @@ Lex Pool for Burstcoin
 Official Pool URL: http://burst.lexitoshi.uk/#
 Recipient: BURST-F3XD-Y4M5-SN8C-G9FFJ
 
-please donate for development to or alternatly leave the devfee option on the pool on.
+please donate for development to or alternatly leave the (OPTIONAL) devfee on the pool on.
 
 for burst or pool related discussion go to http://discord.io/burstofficial 
 
-those who have enabled the devfee feature ill support as best as i can. this way you get some support for supporting the project
+those who have enabled the devfee feature ill support as best as i can. this way you get some support for supporting the project.
+the devfee also helps claw back the huge amount of burst i lost due to ghostblocks and forks. and the cost of the vps server for 4 months along with any development.
+
+a few users disable the devfee and just send me a one off donation instead as a thank you for taking on this project and to help towards these costs.
+
 
 [Burst] BURST-GAJL-VWKN-2XPB-H39R9
 [Bitcoin] 1EWqGpP96Jx2gnD4UQBEoMrdpJPmLpdKJH
