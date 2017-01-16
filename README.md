@@ -22,7 +22,14 @@ We have already had a few keyboard warriors take to the forums about the devfee 
 
 developed with node v4.7.1. works with versoin https://nodejs.org/download/release/v5.12.0/ and below
 
-node v6 has changed a lot of functions and causes it to crash shortly after if not when a block is hit. or even stops it from running alltogether
+node v6 has changed a lot of functions and causes it to crash shortly after if not when a block is hit. or even stops it from running alltogether. a user has taken it upon himself to break backwards compatability for my users. 
+please do not use pascal66's fork of the repo as it uses V6 & v7 of node. which when i do updates for the current versoin might not be compatably with his.
+
+he also removed all credits to myself for any of the work i did for stopping ghostblocks. adding miner types. and various others.
+this user went out of his way to descredit me on the forums by calling  me a copy and paste coder. and clearly didnt look at the commit history.
+
+i will not help or support the versoin he has released.
+
 
 forum thread
 
