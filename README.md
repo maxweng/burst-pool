@@ -18,9 +18,10 @@ We have already had a few keyboard warriors take to the forums about the devfee 
 
 Donate :D buy me a beer or something ;)
 
-[Burst] BURST-GAJL-VWKN-2XPB-H39R9
-
-[Bitcoin] 1EWqGpP96Jx2gnD4UQBEoMrdpJPmLpdKJH
+| Coin | Address |
+| --- | --- |
+|[Burst] | BURST-GAJL-VWKN-2XPB-H39R9|
+|[Bitcoin]| 1EWqGpP96Jx2gnD4UQBEoMrdpJPmLpdKJH|
 
 developed with node v4.7.1. works with versoin https://nodejs.org/download/release/v5.12.0/ and below
 
