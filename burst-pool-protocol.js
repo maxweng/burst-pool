@@ -65,6 +65,7 @@ function transformRequest(req, res, nonceSubmitReqHandler){
                 req.connection.destroy();
             }
         }
+		
     });
 
     req.on('end', function () {
@@ -75,6 +76,9 @@ function transformRequest(req, res, nonceSubmitReqHandler){
             }
             reqBody = '';
         }
+	//	var     minerReq = url.parse(req ,true);
+		//console.log(req.body)
+		  //   clientLog(req	);
         doRedirection(req,reqBody);
     });
     nonceSubmitReqHandler(req);
@@ -98,9 +102,12 @@ function transformResponse(req,res, nonceSubmitedHandler){
                 }
                 else{
                     var response = JSON.parse(recvBuffer);
+					  
+						
                     if(req.isSubmitNonce === true) {
                         nonceSubmitedHandler(req,response);
                     }
+						 //console.log(recvBuffer);
                     //else if(req.isMiningInfo === true){
                     //    recvBuffer = miningInfoHandler(response);
                     //}
@@ -125,6 +132,7 @@ function initHttpAPIServer(nonceSubmitReqHandler,
                            nonceSubmitedHandler ){
 
     var poolHttpServer = http.createServer(function(req, res) {
+		
         transformRequest(req, res, nonceSubmitReqHandler);
         if(req.hasOwnProperty('isMiningInfo') && req.isMiningInfo){
             respondToGetMiningInfo(req, res);
@@ -173,7 +181,7 @@ function initWebserver(){
         extended: true
     }));
 
-    app.get('/burst', function(req,res){
+  app.get('/burst', function(req,res){
         //setTimeout(function(){
             request.get({
                 url:'http://127.0.0.1:'+poolConfig.poolPort+req.url,
@@ -183,20 +191,27 @@ function initWebserver(){
     });
 
     app.post('/burst', function(req,res){
-        //setTimeout(function(){
-            request({
-                url :  'http://127.0.0.1:'+poolConfig.poolPort+req.url,
-                method : 'POST',
-                form : req.body
-            }, function(err, response, body){
-                if(typeof body != 'undefined' && body != null && body.length > 0){
-                    res.write(body);
-                }
-                res.end();
-            });
-        //}, Math.random()*500);
-    });
+             //setTimeout(function(){
 
+           var fudgeType = req.body.requestType;
+            if(fudgeType === 'submitNonce' || fudgeType ==='getMiningInfo'){
+                   request({
+                       url :  'http://127.0.0.1:'+poolConfig.poolPort+req.url,
+                       method : 'POST',
+                       form : req.body
+                   }, function(err, response, body){
+                       if(typeof body != 'undefined' && body != null && body.length > 0){
+                           res.write(body);
+                       }
+                       res.end();
+                   });
+                   }
+                   else{
+                           res.send('submitNonce & getMiningInfo API Call Only');
+
+                   }
+               //}, Math.random()*500);
+    });
     app.use(function(req, res, next) {
         res.send('404 Not Found');
     });
@@ -231,7 +246,7 @@ function clientLogJson(json){
     }
 }
 
-function clientUnicastLogJson(socket,json){
+function clientUnicastLogJson(json){
     try{
         var str = jsonMarkup(json);
         socket.emit('log',str);
