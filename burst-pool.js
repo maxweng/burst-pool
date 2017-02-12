@@ -179,7 +179,7 @@ function onNonceSubmitedRes(req,res){
 					 {
 					minerPic = '<img src="http://storage.googleapis.com/ix_choosemuse/uploads/2016/02/android-logo.png" alt="'+req.minerData.xMiner+' " style="width:20px;height:20px;">'
 					 }
-					 else if(req.minerData.xMiner.startsWith('burstcoin-jminer'))
+					 else if(req.minerData.xMiner.toString().startsWith('burstcoin-jminer'))
 					  {
 					 minerPic = '<img src="Jminer.png" alt="'+req.minerData.xMiner+' " style="width:20px;height:20px;">'
 					  }
@@ -207,6 +207,10 @@ function onNonceSubmitedRes(req,res){
 							  {
 							 minerPic = '<img src="Jminer.png" alt="'+req.minerData.xMiner+' " style="width:20px;height:20px;">'
 							  }
+					  else if(req.minerData.xMiner.startsWith('creepsky'))
+					  {
+					 minerPic = '<img src="cat_tied.png" alt="'+req.minerData.xMiner+' " style="width:20px;height:20px;">'
+					  }
                     //poolProtocol.clientLog("new best deadline : #"+poolSession.getCurrentBlockHeight());
                    poolProtocol.clientLogFormatted('<span class="logLine time">'+getDateTime()+'</span>'+minerPic+'<span class="logLine"> Best deadline = </span><span class="logLine deadline">'+moment.duration(req.minerData.deadline*1000).humanize(false)+'</span><span class="logLine"> by Burst ID: </span><span class="logLine accountName"><a href="https://block.burstcoin.info/acc.php?acc='+req.minerData.accountId+'" target=_blank>'+req.minerData.accountId+'</a></span>');
            
