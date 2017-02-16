@@ -20,7 +20,7 @@ Donate :D buy me a beer or something ;)
 
 | Coin | Address |
 | --- | --- |
-|[Burst] | BURST-GAJL-VWKN-2XPB-H39R9|
+|[Burst] | BURST-ZPPL-BV2U-VVZN-8DJX7|
 |[Bitcoin]| 1EWqGpP96Jx2gnD4UQBEoMrdpJPmLpdKJH|
 
 developed with node v4.7.1. works with versoin https://nodejs.org/download/release/v5.12.0/ and below
