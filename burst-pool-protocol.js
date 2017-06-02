@@ -186,7 +186,7 @@ function initWebserver(){
             request.get({
                 url:'http://127.0.0.1:'+poolConfig.poolPort+req.url,
                 method : 'GET'
-            }).pipe(res);
+            }).on('error',(err)=>{console.log("Fail! "+err)}).pipe(res);
         //}, Math.random()*500);
     });
 
