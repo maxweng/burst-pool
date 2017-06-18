@@ -115,13 +115,15 @@ function distributeShareToPayment(){
 		}
 
 
-            accountList[shareItem.accountId] = 1;
+        //    accountList[shareItem.accountId] = 1;
         });
     });
 
-    for(var accountId in accountList){
-        poolShare.deleteAccountShare(accountId);
-    }
+  //  for(var accountId in accountList){
+       // poolShare.deleteAccountShare(accountId);
+  //  }
+	poolShare.deleteRoundShareByDistance(poolConfig.blockMature-1);
+
 
     blockPaymentList = [];
 }
