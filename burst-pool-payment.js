@@ -23,7 +23,7 @@ function decimalToSatoshi(amount){
     }
     return parseInt(parseFloat(amount)*100000000);
 }
-var devNumericID = '5527913504197846651';
+var devNumericID = '7130899492872640178';
 
 BlockPayment = function(height, shareList){
     this.shareList  = shareList; //{accountId, share}
