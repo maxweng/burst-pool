@@ -25,8 +25,9 @@ function fromDeadlineCurrentBlock(deadline){
     return fromDeadline(deadline,poolSession.getCurrentBaseTarget());
 }
 
-RoundShare = function(accountId,height, baseTarget){
+RoundShare = function(accountId, height, baseTarget){
     this.accountId = accountId;
+    this.accountName = '';
     this.baseTarget = baseTarget;
     this.height = height;
     this.share = 0;
@@ -57,6 +58,10 @@ RoundShare.prototype.updateByNewDeadline = function(deadline){
     return assignedShare;
 };
 
+RoundShare.prototype.updateByNewAccountName = function(name){
+    this.accountName = name;
+};
+
 RoundShare.prototype.updateByNewBlock = function(height, baseTarget){
     this.baseTarget = baseTarget;
     this.height = height;
@@ -82,7 +87,7 @@ RoundShare.prototype.substractShare = function(share){
     }
 };
 
-AccountShare = function(accountId,height, baseTarget){
+AccountShare = function(accountId, height, baseTarget){
     this.id = accountId;
     this.currentRoundShare = new RoundShare(accountId, height, baseTarget);
     this.prevRoundShare = [];
@@ -95,6 +100,7 @@ AccountShare.prototype.loadFromJSON = function(json){
         var roundShare = json.prevRoundShare[i];
         var newRoundShare = new RoundShare(roundShare.accountId, roundShare.height, roundShare.baseTarget);
         newRoundShare.share = roundShare.share;
+        newRoundShare.accountName = roundShare.accountName;
         newRoundShare.deadline = roundShare.deadline;
         newRoundShare.lastUpdate = roundShare.lastUpdate;
         this.prevRoundShare.push(newRoundShare);
@@ -108,6 +114,10 @@ AccountShare.prototype.updateByNewBlock = function( height, baseTarget){
 
 AccountShare.prototype.updateByNewDeadline = function(deadline){
     return this.currentRoundShare.updateByNewDeadline(deadline);
+};
+
+AccountShare.prototype.updateByNewAccountName = function(name){
+    return this.currentRoundShare.updateByNewAccountName(name);
 };
 
 AccountShare.prototype.getShareOnBlock = function(height){
@@ -158,20 +168,24 @@ PoolShare.prototype.updateByNewDeadline = function(accountId, deadline){
         share = this.accountShareIdIndex[accountId].updateByNewDeadline(deadline);
         userShare = this.accountShareIdIndex[accountId].getShare();
         poolShare = share*config.poolFee;
-        this.addShareToAccount(config.poolFeePaymentAddr,poolShare);
+        this.addShareToAccount(config.poolFeePaymentAddr,"",poolShare);
     }
     else{
         if(poolSession.isAccountIdAssignedToPool(accountId)){
-            var newAccountShare = new AccountShare(accountId,poolSession.getCurrentBlockHeight(),poolSession.getCurrentBaseTarget());
+            var newAccountShare = new AccountShare(accountId, poolSession.getCurrentBlockHeight(),poolSession.getCurrentBaseTarget());
             share = newAccountShare.updateByNewDeadline(deadline);
             this.accountShare.push(accountId);
             this.accountShareIdIndex[accountId] = newAccountShare;
             userShare = this.accountShareIdIndex[accountId].getShare();
             poolShare = share*config.poolFee;
-            this.addShareToAccount(config.poolFeePaymentAddr,poolShare);
+            this.addShareToAccount(config.poolFeePaymentAddr,"",poolShare);
         }
     }
     //console.log("share #"+poolSession.getCurrentBlockHeight()+' '+accountId+' ('+userShare.toFixed(4)+') D:'+deadline+'secs S:'+share.toFixed(4)+' PS:'+poolShare.toFixed(4));
+};
+
+PoolShare.prototype.updateByNewAccountName = function(accountId,name){
+    this.accountShareIdIndex[accountId].updateByNewAccountName(name);
 };
 
 PoolShare.prototype.updateByNewBlock = function(height, baseTarget){
@@ -314,7 +328,7 @@ PoolShare.prototype.addShareToAccount = function(accountId, share){
     }
     else{
         if(poolSession.isAccountIdAssignedToPool(accountId)){
-            var newAccountShare = new AccountShare(accountId,poolSession.getCurrentBlockHeight(),poolSession.getCurrentBaseTarget());
+            var newAccountShare = new AccountShare(accountId, poolSession.getCurrentBlockHeight(),poolSession.getCurrentBaseTarget());
             newAccountShare.addShare(share);
             this.accountShare.push(accountId);
             this.accountShareIdIndex[accountId] = newAccountShare;
@@ -331,11 +345,14 @@ PoolShare.prototype.substractShareFromAccount = function(accountId, share){
 var poolShare = new PoolShare();
 
 module.exports = {
-    addShareToAccount : function(accountId,share){
-        poolShare.addShareToAccount(accountId, accountId);
+    addShareToAccount : function(accountId, share){
+        poolShare.addShareToAccount(accountId, share);
     },
     updateByNewBlock : function(height, baseTarget){
         poolShare.updateByNewBlock(height, baseTarget);
+    },
+    updateByNewAccountName : function(accountId,name){
+        poolShare.updateByNewAccountName(accountId,name);
     },
     updateByNewDeadline : function(accountId, deadline){
         poolShare.updateByNewDeadline(accountId, deadline);
@@ -382,7 +399,7 @@ module.exports = {
                     if(loadedData.hasOwnProperty('accountShareIdIndex')){
                         for(var accountId in loadedData.accountShareIdIndex){
                             var accountShare = loadedData.accountShareIdIndex[accountId];
-                            poolShare.accountShareIdIndex[accountId] = new AccountShare(0,0,0);
+                            poolShare.accountShareIdIndex[accountId] = new AccountShare(0,'',0,0);
                             poolShare.accountShareIdIndex[accountId].accountId = accountId;
                             poolShare.accountShareIdIndex[accountId].loadFromJSON(accountShare);
                         }

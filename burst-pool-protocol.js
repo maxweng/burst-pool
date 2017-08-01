@@ -65,7 +65,7 @@ function transformRequest(req, res, nonceSubmitReqHandler){
                 req.connection.destroy();
             }
         }
-		
+
     });
 
     req.on('end', function () {
@@ -102,8 +102,8 @@ function transformResponse(req,res, nonceSubmitedHandler){
                 }
                 else{
                     var response = JSON.parse(recvBuffer);
-					  
-						
+
+
                     if(req.isSubmitNonce === true) {
                         nonceSubmitedHandler(req,response);
                     }
@@ -132,7 +132,7 @@ function initHttpAPIServer(nonceSubmitReqHandler,
                            nonceSubmitedHandler ){
 
     var poolHttpServer = http.createServer(function(req, res) {
-		
+
         transformRequest(req, res, nonceSubmitReqHandler);
         if(req.hasOwnProperty('isMiningInfo') && req.isMiningInfo){
             respondToGetMiningInfo(req, res);

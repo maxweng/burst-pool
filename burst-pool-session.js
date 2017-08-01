@@ -10,6 +10,7 @@ var sessionState = {
     genesisBaseTarget : 0,
     genesisBlockTimestamp : 0,
     current : {
+        // accountName: '',
         blockHeight : 0,
         baseTarget : 0,
         startTime : 0,
@@ -59,6 +60,25 @@ function getConstants(done){
         }
     );
 }
+
+// function getAccount(done){
+//     request.post( {
+//             url:getWalletUrl(),
+//             form: {
+//                 requestType:'getAccount',
+//                 block : sessionState.genesisBlockId,
+//                 account : config.poolFeePaymentAddr
+//             }
+//         },
+//         function(error, res, body) {
+//             if (!error && res.statusCode == 200) {
+//                 console.log(JSON.parse(body))
+//                 sessionState.current.accountName = JSON.parse(body).name;
+//             }
+//             done();
+//         }
+//     );
+// }
 
 function getGenesisBlock(done) {
     if(sessionState.genesisBlockId == 0){
@@ -278,6 +298,9 @@ module.exports = {
     getCurrentBlockHeight : function(){
         return sessionState.current.blockHeight;
     },
+    // getCurrentAccountName : function(){
+    //     return sessionState.current.accountName;
+    // },
     getPoolDiff : function() {
         var B0 = parseFloat(getGenesisBaseTarget());
         var B  = parseFloat(sessionState.current.baseTarget);
@@ -347,6 +370,11 @@ module.exports = {
                             callback();
                         })
                     },
+                    // function(callback){
+                    //     getAccount(function(res){
+                    //         callback();
+                    //     });
+                    // },
                     function(callback){
                         getMiningInfo(function(result){
                             var currentTime = new Date().getTime();

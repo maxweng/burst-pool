@@ -7,6 +7,7 @@ var poolSession     = require('./burst-pool-session');
 var poolShare       = require('./burst-pool-share');
 var poolPayment     = require('./burst-pool-payment');
 var poolProtocol    = require('./burst-pool-protocol');
+var request         = require('request');
 var async       = require('async');
 
 function onNewBlock(miningInfo){
@@ -81,6 +82,24 @@ function logMiningRound(socket){
     }
 }
 
+function getAccountName(id,done){
+    request.post( {
+            url:poolSession.getWalletUrl(),
+            form: {
+                requestType:'getAccount',
+                account : id
+            }
+        },
+        function(error, res, body) {
+            console.log(JSON.parse(body))
+            if (!error && res.statusCode == 200) {
+                done(JSON.parse(body).name||'test');
+            }
+            done();
+        }
+    );
+}
+
 function onNonceSubmitReq(req){
 
     var minerReq = null;
@@ -140,15 +159,16 @@ function onNonceSubmitedRes(req,res){
     if(req.hasOwnProperty('minerData')) {
         if (res.hasOwnProperty('deadline') &&
             req.minerData.hasOwnProperty('accountId')) {
-
             var deadline = parseInt(res.deadline);
             var accountId = req.minerData.accountId;
+            var accountName = '';
             process.nextTick(function(){
                 req.minerData.deadline = deadline;
                 req.minerData.submission = res.result;
-
-                poolShare.updateByNewDeadline(accountId,deadline);
-
+                poolShare.updateByNewDeadline(accountId, deadline);
+                getAccountName(accountId,function(name){
+                    if(name)poolShare.updateByNewAccountName(accountId,name);
+                });
                 var accountShare = poolShare.getAccountShare(accountId);
                 if(accountShare != null){
                     poolProtocol.getWebsocket().emit('roundShares',JSON.stringify(accountShare));
@@ -189,7 +209,7 @@ function onNonceSubmitedRes(req,res){
 					  }
                  //   poolProtocol.clientLog("new best deadline : #"+poolSession.getCurrentBlockHeight());
                        poolProtocol.clientLogFormatted('<span class="logLine time">'+getDateTime()+'</span>'+minerPic+'<span class="logLine"> Best deadline = </span><span class="logLine deadline">'+moment.duration(req.minerData.deadline*1000).humanize(false)+'</span><span class="logLine"> by Burst ID: </span><span class="logLine accountName"><a href="https://block.burstcoin.info/acc.php?acc='+req.minerData.accountId+'" target=_blank>'+req.minerData.accountId+'</a></span>');
-           
+
                 }
                 if(sessionState.current.bestDeadline == -1){
                     sessionState.current.bestDeadline = deadline;
@@ -213,7 +233,7 @@ function onNonceSubmitedRes(req,res){
 					  }
                     //poolProtocol.clientLog("new best deadline : #"+poolSession.getCurrentBlockHeight());
                    poolProtocol.clientLogFormatted('<span class="logLine time">'+getDateTime()+'</span>'+minerPic+'<span class="logLine"> Best deadline = </span><span class="logLine deadline">'+moment.duration(req.minerData.deadline*1000).humanize(false)+'</span><span class="logLine"> by Burst ID: </span><span class="logLine accountName"><a href="https://block.burstcoin.info/acc.php?acc='+req.minerData.accountId+'" target=_blank>'+req.minerData.accountId+'</a></span>');
-           
+
                 }
             });
         }
