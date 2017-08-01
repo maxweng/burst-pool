@@ -402,7 +402,7 @@ module.exports = {
                     if(loadedData.hasOwnProperty('accountShareIdIndex')){
                         for(var accountId in loadedData.accountShareIdIndex){
                             var accountShare = loadedData.accountShareIdIndex[accountId];
-                            poolShare.accountShareIdIndex[accountId] = new AccountShare(0,'',0,0);
+                            poolShare.accountShareIdIndex[accountId] = new AccountShare(0,0,0);
                             poolShare.accountShareIdIndex[accountId].accountId = accountId;
                             poolShare.accountShareIdIndex[accountId].loadFromJSON(accountShare);
                         }
