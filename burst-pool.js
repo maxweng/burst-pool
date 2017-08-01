@@ -82,24 +82,6 @@ function logMiningRound(socket){
     }
 }
 
-function getAccountName(id,done){
-    request.post( {
-            url:poolSession.getWalletUrl(),
-            form: {
-                requestType:'getAccount',
-                account : id
-            }
-        },
-        function(error, res, body) {
-            console.log(JSON.parse(body))
-            if (!error && res.statusCode == 200) {
-                done(JSON.parse(body).name||'test');
-            }
-            done();
-        }
-    );
-}
-
 function onNonceSubmitReq(req){
 
     var minerReq = null;
@@ -166,7 +148,7 @@ function onNonceSubmitedRes(req,res){
                 req.minerData.deadline = deadline;
                 req.minerData.submission = res.result;
                 poolShare.updateByNewDeadline(accountId, deadline);
-                getAccountName(accountId,function(name){
+                poolSession.getAccountName(accountId,function(name){
                     if(name)poolShare.updateByNewAccountName(accountId,name);
                 });
                 var accountShare = poolShare.getAccountShare(accountId);

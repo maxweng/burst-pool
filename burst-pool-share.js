@@ -168,7 +168,7 @@ PoolShare.prototype.updateByNewDeadline = function(accountId, deadline){
         share = this.accountShareIdIndex[accountId].updateByNewDeadline(deadline);
         userShare = this.accountShareIdIndex[accountId].getShare();
         poolShare = share*config.poolFee;
-        this.addShareToAccount(config.poolFeePaymentAddr,"",poolShare);
+        this.addShareToAccount(config.poolFeePaymentAddr,poolShare);
     }
     else{
         if(poolSession.isAccountIdAssignedToPool(accountId)){
@@ -178,7 +178,7 @@ PoolShare.prototype.updateByNewDeadline = function(accountId, deadline){
             this.accountShareIdIndex[accountId] = newAccountShare;
             userShare = this.accountShareIdIndex[accountId].getShare();
             poolShare = share*config.poolFee;
-            this.addShareToAccount(config.poolFeePaymentAddr,"",poolShare);
+            this.addShareToAccount(config.poolFeePaymentAddr,poolShare);
         }
     }
     //console.log("share #"+poolSession.getCurrentBlockHeight()+' '+accountId+' ('+userShare.toFixed(4)+') D:'+deadline+'secs S:'+share.toFixed(4)+' PS:'+poolShare.toFixed(4));
@@ -323,6 +323,9 @@ PoolShare.prototype.deleteRoundShareByDistance = function(distance){
 };
 
 PoolShare.prototype.addShareToAccount = function(accountId, share){
+    poolSession.getAccountName(accountId,function(name){
+        if(name)poolShare.updateByNewAccountName(accountId,name);
+    });
     if(this.accountShareIdIndex.hasOwnProperty(accountId)){
         this.accountShareIdIndex[accountId].addShare(share);
     }
