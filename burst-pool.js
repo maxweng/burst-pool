@@ -24,7 +24,6 @@ function onNewBlock(miningInfo){
             poolPayment.saveSession();
             poolSession.saveSession();
             logMiningRound();
-
             console.log('new block #'+miningInfo.height+' BT:'+miningInfo.baseTarget+' ND:'+poolSession.getNetDiff());
             poolProtocol.getWebsocket().emit('shareList',JSON.stringify(poolShare.getCumulativeShares()));
             poolProtocol.getWebsocket().emit('blockHistory',JSON.stringify(poolSession.getState().prevBlocks));

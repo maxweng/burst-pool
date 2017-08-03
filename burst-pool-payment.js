@@ -233,6 +233,7 @@ function sendPayment(toAccountId, amount, txFee, failedTxList, sentPaymentList, 
                     txid      : '',
                     sendTime  : 0,
                     accountId : toAccountId,
+                    accountName : '',
                     amount    : amount,
                     txFee     : txFee
                 };
@@ -246,12 +247,16 @@ function sendPayment(toAccountId, amount, txFee, failedTxList, sentPaymentList, 
 
                         poolProtocol.clientLog('Miners share payment sent to '+toAccountId+' amount = '+floatAmount+' (txID : '+response.transaction+' )');
                         console.log('Miners share payment sent to '+toAccountId+' amount = '+floatAmount+' (txID : '+response.transaction+' )');
-                        sentPaymentList.push(result);
-                        if(sentPaymentList.length > poolConfig.maxRecentPaymentHistory){
-                            var toRemove = sentPaymentList.length - poolConfig.maxRecentPaymentHistory;
-                            sentPaymentList.splice(0,toRemove);
-                        }
-                        poolSession.getState().current.totalPayments += amount;
+                        poolSession.getAccountName(toAccountId,function(name){
+                            if(name)result.accountName = name;
+                            sentPaymentList.push(result);
+                            if(sentPaymentList.length > poolConfig.maxRecentPaymentHistory){
+                                var toRemove = sentPaymentList.length - poolConfig.maxRecentPaymentHistory;
+                                sentPaymentList.splice(0,toRemove);
+                            }
+                            poolSession.getState().current.totalPayments += amount;
+                        });
+                        
                     }
                 }
                 else{

@@ -128,7 +128,6 @@ function getAccountName(id,done){
             }
         },
         function(error, res, body) {
-            console.log(JSON.parse(body))
             if (!error && res.statusCode == 200) {
                 done(JSON.parse(body).name);
             }
