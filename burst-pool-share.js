@@ -372,6 +372,16 @@ module.exports = {
     getAccountShare : function(accountId){
         return poolShare.getAccountShare(accountId);
     },
+    getAccountShareIndex : function(accountId){
+        return poolShare.accountShareIdIndex[accountId];
+    },
+    getAccountShareName : function(accountId){
+        var name = '';
+        if(poolShare.accountShareIdIndex[accountId]&&poolShare.accountShareIdIndex[accountId].currentRoundShare){
+            name = poolShare.accountShareIdIndex[accountId].currentRoundShare.accountName;
+        }
+        return name;
+    },
     saveSession : function(){
         var poolShareData = JSON.stringify(poolShare,null,2);
         fs.writeFileSync('pool-share.json', poolShareData);
